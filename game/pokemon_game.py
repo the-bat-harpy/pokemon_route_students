@@ -35,10 +35,35 @@ class PokemonGame:
     def total_attack(self, attacker_types, defender_types):
 
         # TO DO
+        self.prolog = Prolog() 
+        self.prolog.consult("pokemon_game.pl") 
 
         return 0
 
     # --------------------------------
+    
+    """
+    Função total_attack(attacker_types, defender_types):
+    Consulta o ficheiro Prolog para obter o efeito de cada tipo via factos attack(AttackerType, DefenderType, Effect).
+    Os efeitos podem ser {0, 0.5, 1, 2}
+    Cálculo: Escolhe o tipo de ataque do atacante que tiver o maior efeito combinado (multiplicação 
+    dos efeitos contra todos os tipos do defensor).
+    
+    Função evaluate_next_rooms(): Chama o predicado Prolog next_rooms e a função fuzzy calculate_prob.
+    Por exemplo: 
+    attacker_types = [grass, poison]
+    # do Pokémon que vai atacar
+    defender_types = [normal, flying]
+    
+    # do Pokémon que será atacado
+    attack( grass, normal, 1).
+    attack( grass, flying, 0.5).
+    attack( poison, normal, 1).
+    attack( poison, flying, 1).
+    Atacar com grass = 1*0.5 = 0.5, e atacar com poison = 1*1 = 1.
+    Como tal o ataque escolhido é do tipo poison, e o efeito do ataque é de 1.
+
+    """
 
     def evaluate_next_rooms(self, pokemon_level, pos):
 

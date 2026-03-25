@@ -4,17 +4,41 @@
 
 player_starts(0,0).
 
-% TO DO
+
+% o caso mais simples é quando o pokemon se encontra na posição inicial (0,0)
 next_rooms(X,Y,Rooms) :-
-    route(M).
+    route(M),
+    findall(
+        [Id,Name,Level,NX,NY,Types], 
+        (neighbour_position(X,Y,NX,NY), pokemon_at(NX,NY,M,Id,Level),pokemon(Id,Name,Types)),
+        Rooms).
 
 
-/*Predicado next_rooms(X, Y, Rooms):
-Identifica os vizinhos de (X, Y)(coordenadas da posição do pokemon inicial)  com base na matriz route(M) em pokemon_route.pl.
-Rooms deve ser uma  lista de listas, em que cada lista contém a informação dos Pokémons vizinhos [Id, Name, Level, X, Y, Types], ou seja, o identificador, o nome, o nível, as coordenadas da posição e ainda a lista de tipos desse Pokémon.
-?-next_rooms(0, 0, Rooms).
-Rooms = [ [19, rattata, 2, 1, 0, [normal]],<
-[16, pidgey, 2, 0, 1, [normal, flying]] ]
-Deve carregar os outros ficheiros via ensure_loaded.
- Pode criar predicados auxiliares ao predicado next_rooms, mas não pode utilizar nenhum mecanismo do Prolog que não tenha sido lecionado em aula.
-*/
+% estabelecer vizinhança (sem diagonais)
+neighbour_position(X,Y,NX,NY):-
+    NX is X-1,
+    NY is Y.
+
+neighbour_position(X,Y,NX,NY):-
+    NX is X+1,
+    NY is Y.
+
+neighbour_position(X,Y,NX,NY):-
+    NX is X,
+    NY is Y-1.
+
+neighbour_position(X,Y,NX,NY):-
+    NX is X,
+    NY is Y+1.
+
+% pokemon na posição
+pokemon_at(X,Y,M,Id,Level):-
+    element(Y,M,Linha),
+    element(X,Linha,(Id,Level)).
+
+
+element(0,[X|_],X).
+element(N,[_|T], Y):-
+    N > 0,
+    M is N-1,
+    element(M,T,Y).
