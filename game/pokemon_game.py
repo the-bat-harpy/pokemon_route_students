@@ -62,32 +62,9 @@ class PokemonGame:
                 print(f"  *** Novo melhor efeito encontrado: {max_effect} ***") # Debug
 
         print(f"Resultado final enviado para o Fuzzy: {max_effect}\n") # Debug
-        return max_effect
+        return max_effect  
 
     # --------------------------------
-    
-    """
-    Função total_attack(attacker_types, defender_types):
-    Consulta o ficheiro Prolog para obter o efeito de cada tipo via factos attack(AttackerType, DefenderType, Effect).
-    Os efeitos podem ser {0, 0.5, 1, 2}
-    Cálculo: Escolhe o tipo de ataque do atacante que tiver o maior efeito combinado (multiplicação 
-    dos efeitos contra todos os tipos do defensor).
-    
-    Função evaluate_next_rooms(): Chama o predicado Prolog next_rooms e a função fuzzy calculate_prob.
-    Por exemplo: 
-    attacker_types = [grass, poison]
-    # do Pokémon que vai atacar
-    defender_types = [normal, flying]
-    
-    # do Pokémon que será atacado
-    attack( grass, normal, 1).
-    attack( grass, flying, 0.5).
-    attack( poison, normal, 1).
-    attack( poison, flying, 1).
-    Atacar com grass = 1*0.5 = 0.5, e atacar com poison = 1*1 = 1.
-    Como tal o ataque escolhido é do tipo poison, e o efeito do ataque é de 1.
-
-    """
 
     def evaluate_next_rooms(self, pokemon_level, pos):
 
@@ -116,10 +93,52 @@ class PokemonGame:
 
     # --------------------------------
 
-    def it_wins(self, prob):
-        r = random.random()
-        print("Random value:", r)
-        return r < prob
+    def compute_damage(self, attacker_types, defender_types):
+        damage = self.total_attack(attacker_types, defender_types)
+        
+        message = ""
+        if damage == 0:
+            message = "It doesn't affect the opponent..."
+        elif damage < 1:
+            message = "It's not very effective..."
+        elif damage > 1:
+            message = "It's super effective!"
+
+        success = random.random()
+        if success < 0.05:
+            damage = 0
+            message = "Oh no! The attack missed!"
+        elif success > 0.95:
+            damage *= 2
+            message = "Critical hit!"
+
+        return damage, message
+    
+    # --------------------------------
+
+    def it_wins(self, next_room):
+        opponent_name = next_room[1]
+        opponent_hp = next_room[2]
+        opponent_types = next_room[5]
+        print(f"A wild {opponent_name.capitalize()} appears! Level: {opponent_hp}, Type: {opponent_types}")
+        first = random.random() > 0.5
+        print("First attack:", "Player" if first else "Opponent")
+
+        player_hp = self.pokemon_level
+        while player_hp > 0 and opponent_hp > 0:
+            if first:
+                damage, message = self.compute_damage(self.pokemon_starter_types, opponent_types)
+                opponent_hp -= damage
+                print(f"{self.pokemon_starter_name.capitalize()} attacks! {message}")
+                print(f"Damage: {damage}, {opponent_name.capitalize()} HP: {max(0, opponent_hp)}")
+            else:
+                damage, message = self.compute_damage(opponent_types, self.pokemon_starter_types)
+                player_hp -= damage
+                print(f"{opponent_name.capitalize()} attacks! {message}")
+                print(f"Damage: {damage}, {self.pokemon_starter_name.capitalize()} HP: {max(0, player_hp)}")
+            first = not first
+
+        return player_hp > 0
 
     # --------------------------------
 
@@ -176,7 +195,7 @@ class PokemonGame:
                 return None, None, None, True
         else:
             print(f"Next Room: {next_room}, probability of win: {prob}")
-            won = self.it_wins(prob)
+            won = self.it_wins(next_room)
             self.game_over = not won
             
             if won:
