@@ -34,11 +34,35 @@ class PokemonGame:
 
     def total_attack(self, attacker_types, defender_types):
 
-        # TO DO
         self.prolog = Prolog() 
         self.prolog.consult("pokemon_game.pl") 
 
-        return 0
+        max_effect = 0
+        print(f"\n--- A calcular ataque: {attacker_types} vs {defender_types} ---") # Debug
+
+        for a_type in attacker_types:
+            current_attack_total_effect = 1
+            print(f"A testar tipo de ataque: {a_type}") # Debug
+            
+            for d_type in defender_types:
+                query = f"attack({a_type}, {d_type}, Effect)"
+                solutions = list(self.prolog.query(query))
+                
+                if solutions:
+                    effect = float(solutions[0]["Effect"])
+                    current_attack_total_effect *= effect
+                    print(f"  -> Contra {d_type}: efeito {effect} (Acumulado: {current_attack_total_effect})") # Debug
+                else:
+                    current_attack_total_effect *= 1
+                    print(f"  -> Contra {d_type}: não encontrado (usando 1)") # Debug
+            
+            # Guardar o melhor efeito encontrado até agora
+            if current_attack_total_effect > max_effect:
+                max_effect = current_attack_total_effect
+                print(f"  *** Novo melhor efeito encontrado: {max_effect} ***") # Debug
+
+        print(f"Resultado final enviado para o Fuzzy: {max_effect}\n") # Debug
+        return max_effect
 
     # --------------------------------
     
